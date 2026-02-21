@@ -3,600 +3,662 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đang xem: Tiếng yêu này Thư dịch được không?</title>
+    <title>Rạp chiếu phim của K&T</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* Tùy chỉnh thanh cuộn cho đẹp mắt */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #1f2937;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #4b5563;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #6b7280;
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        
+        /* Hiệu ứng active cho phim đang chọn */
+        .movie-item.active {
+            background-color: #374151; /* gray-700 */
+            border-left: 4px solid #3b82f6; /* blue-500 */
         }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-200 font-sans antialiased min-h-screen flex flex-col">
 
-    <!-- Header / Navbar -->
-    <header class="bg-gray-800 shadow-md sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <i class="fas fa-film text-blue-500 text-2xl"></i>
-                <h1 class="text-xl font-bold text-white tracking-wider">Khoa Phim</h1>
+    <!-- Header -->
+    <header class="bg-gray-800 shadow-md sticky top-0 z-50 border-b border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="location.reload()">
+                <i class="fas fa-play-circle text-blue-500 text-3xl"></i>
+                <h1 class="text-xl font-bold text-white tracking-wider">Rạp chiếu phim của K&T</h1>
             </div>
-            <button class="text-gray-400 hover:text-white transition">
-                <i class="fas fa-search text-xl"></i>
-            </button>
+            <!-- Search đơn giản (UI only) -->
+            <div class="relative hidden md:block">
+                <input type="text" placeholder="Tìm kiếm phim..." class="bg-gray-700 text-gray-200 px-4 py-2 rounded-full border border-gray-600 focus:outline-none focus:border-blue-500 w-64 text-sm">
+                <i class="fas fa-search absolute right-3 top-2.5 text-gray-400 text-sm"></i>
+            </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-grow max-w-6xl mx-auto px-4 py-6 w-full flex flex-col gap-6">
+    <div class="max-w-7xl mx-auto w-full flex-grow flex flex-col lg:flex-row gap-6 p-4">
         
-        <!-- Breadcrumb -->
-        <nav id="breadcrumb" class="text-sm text-gray-400 flex flex-wrap gap-2 items-center">
-            <!-- Được render bằng JS -->
-        </nav>
-
-        <!-- Video Player Section -->
-        <div class="w-full bg-black rounded-xl overflow-hidden shadow-2xl border border-gray-800">
-            <!-- Tỷ lệ 16:9 -->
-            <div class="relative w-full h-0 pb-[56.25%]">
-                <iframe id="video-player" 
-                        class="absolute top-0 left-0 w-full h-full" 
-                        src="" 
-                        title="Video Player" 
-                        frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen>
-                </iframe>
-            </div>
-        </div>
-
-        <!-- Episode List Section (Dành cho phim bộ) -->
-        <div id="episode-section" class="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 hidden">
-            <h3 class="text-xl font-bold text-white mb-4"><i class="fas fa-list-ul mr-2 text-blue-500"></i>Danh Sách Tập</h3>
-            <div id="server-list" class="flex flex-col gap-6">
-                <!-- Render bằng JS -->
-            </div>
-        </div>
-
-        <!-- Movie Information -->
-        <div class="flex flex-col md:flex-row gap-6 bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700">
-            <!-- Poster -->
-            <div class="hidden md:block w-48 shrink-0">
-                <img id="movie-poster" src="" alt="Poster" class="w-full h-auto rounded-lg shadow-md object-cover aspect-[2/3]">
-            </div>
-
-            <!-- Details -->
-            <div class="flex-grow flex flex-col gap-4">
-                <div>
-                    <h2 id="movie-title" class="text-2xl md:text-3xl font-bold text-white mb-1">Tên Phim</h2>
-                    <h3 id="movie-origin-name" class="text-md text-gray-400 italic">Origin Name</h3>
-                </div>
-
-                <!-- Tags / Badges -->
-                <div class="flex flex-wrap gap-2 text-xs font-semibold" id="movie-badges">
-                    <span id="badge-quality" class="bg-blue-600 text-white px-2 py-1 rounded">HD</span>
-                    <span id="badge-lang" class="bg-red-600 text-white px-2 py-1 rounded">Vietsub</span>
-                    <span id="badge-year" class="bg-gray-700 text-gray-300 px-2 py-1 rounded border border-gray-600">2026</span>
-                    <span id="badge-time" class="bg-gray-700 text-gray-300 px-2 py-1 rounded border border-gray-600">60 phút/tập</span>
-                </div>
-
-                <div class="flex flex-wrap gap-2 text-sm mt-1" id="movie-categories">
-                    <!-- Category tags render by JS -->
-                </div>
-
-                <!-- Description -->
-                <div class="mt-2 text-gray-300 leading-relaxed text-sm md:text-base border-t border-gray-700 pt-4" id="movie-description">
-                    Mô tả phim...
+        <!-- Left Column: Playlist / Movie List -->
+        <aside class="w-full lg:w-1/4 flex-shrink-0 order-2 lg:order-1">
+            <div class="bg-gray-800 rounded-xl overflow-hidden shadow-lg border border-gray-700 sticky top-24">
+                <div class="p-4 bg-gray-750 border-b border-gray-700 flex justify-between items-center">
+                    <h3 class="font-bold text-white"><i class="fas fa-list mr-2 text-blue-400"></i>Danh Sách Phim</h3>
+                    <span class="text-xs bg-blue-600 px-2 py-0.5 rounded text-white" id="movie-count">0</span>
                 </div>
                 
-                <div class="mt-4 pt-4 border-t border-gray-700 text-sm">
-                     <p class="mb-2"><strong class="text-gray-400">Đạo diễn:</strong> <span id="movie-director" class="text-gray-200"></span></p>
-                     <p><strong class="text-gray-400">Diễn viên:</strong> <span id="movie-actors" class="text-gray-200"></span></p>
+                <div class="overflow-y-auto max-h-[80vh]" id="movie-list">
+                    <!-- Danh sách phim sẽ được render ở đây -->
                 </div>
             </div>
-        </div>
+        </aside>
 
-    </main>
+        <!-- Right Column: Player & Info -->
+        <main class="w-full lg:w-3/4 order-1 lg:order-2 flex flex-col gap-6">
+            
+            <!-- Video Player Area -->
+            <div class="w-full bg-black rounded-xl overflow-hidden shadow-2xl border border-gray-800 relative z-10">
+                <div class="relative w-full h-0 pb-[56.25%]">
+                    <iframe id="video-player" 
+                            class="absolute top-0 left-0 w-full h-full" 
+                            src="" 
+                            title="Video Player" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen>
+                    </iframe>
+                    <!-- Overlay placeholder khi chưa chọn phim hoặc lỗi -->
+                    <div id="player-placeholder" class="absolute inset-0 flex items-center justify-center bg-gray-900 text-gray-500 hidden">
+                        <div class="text-center">
+                            <i class="fas fa-film text-6xl mb-4 opacity-50"></i>
+                            <p>Chọn phim để bắt đầu xem</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    <!-- Footer -->
-    <footer class="bg-gray-900 border-t border-gray-800 mt-10">
-        <div class="max-w-6xl mx-auto px-4 py-6 text-center text-gray-500 text-sm">
-            <p>© 2026 OPhim Player Mini. Dữ liệu được trích xuất từ file JSON.</p>
-        </div>
-    </footer>
+            <!-- Episode Selector (Cho phim bộ) -->
+            <div id="episode-section" class="bg-gray-800 rounded-xl p-5 shadow-lg border border-gray-700 hidden">
+                <h3 class="text-lg font-bold text-white mb-3 flex items-center">
+                    <i class="fas fa-layers mr-2 text-blue-500"></i>Danh Sách Tập
+                </h3>
+                <div id="server-list" class="flex flex-col gap-4">
+                    <!-- Các server và nút tập phim -->
+                </div>
+            </div>
 
-    <!-- Script xử lý dữ liệu JSON -->
+            <!-- Movie Info -->
+            <div id="movie-info" class="flex flex-col md:flex-row gap-6 bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700">
+                <!-- Poster -->
+                <div class="hidden md:block w-48 shrink-0">
+                    <img id="movie-poster" src="https://via.placeholder.com/300x450?text=No+Image" alt="Poster" class="w-full h-auto rounded-lg shadow-md object-cover aspect-[2/3] border border-gray-600">
+                </div>
+
+                <!-- Text Info -->
+                <div class="flex-grow flex flex-col gap-3">
+                    <div>
+                        <h2 id="movie-title" class="text-2xl md:text-3xl font-bold text-white leading-tight">...</h2>
+                        <h3 id="movie-origin-name" class="text-md text-gray-400 italic mt-1">...</h3>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2 text-xs font-semibold" id="movie-badges">
+                        <!-- Badges -->
+                    </div>
+
+                    <div class="flex flex-wrap gap-2 text-sm mt-1" id="movie-categories">
+                        <!-- Categories -->
+                    </div>
+
+                    <div class="mt-2 text-gray-300 leading-relaxed text-sm border-t border-gray-700 pt-3" id="movie-description">
+                        Chọn một phim để xem chi tiết...
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Nơi chứa dữ liệu phim -->
     <script>
-        // Dữ liệu JSON phim bộ bạn đã cung cấp
-        const movieData = {
-          "status": "success",
-          "message": "",
-          "data": {
-            "seoOnPage": {
-              "og_type": "video.movie",
-              "titleHead": " Tiếng yêu này Thư dịch được không?-Can This Love Be Translated? (2026) [HD-Vietsub + Lồng Tiếng]",
-              "seoSchema": {
-                "@context": "https://schema.org",
-                "@type": "TvSeries",
-                "name": "Tiếng yêu này Thư dịch được không?-Can This Love Be Translated? (2026) [HD-Vietsub + Lồng Tiếng]",
-                "dateModified": "2025-12-19T20:25:09.000Z",
-                "dateCreated": "2025-12-19T20:25:09.000Z",
-                "url": "https://ophim17.cc/phim/tieng-yeu-nay-anh-dich-duoc-khong",
-                "datePublished": "2025-12-19T20:25:09.000Z",
-                "image": "https://img.ophim.live/uploads/movies/tieng-yeu-nay-anh-dich-duoc-khong-thumb.jpg",
-                "director": "OPhim.Live" // This field is technically incorrect in the sample data (TvSeries usually has creators), but kept for consistency
-              },
-              "descriptionHead": "Đi khắp thế giới để quay chương trình truyền hình, cảm xúc của một người nổi tiếng và phiên dịch viên của cô lại chẳng thể nào thông dịch. Liệu tình yêu có tìm được ngôn ngữ...",
-              "og_image": [
-                "movies/tieng-yeu-nay-anh-dich-duoc-khong-thumb.jpg",
-                "movies/tieng-yeu-nay-anh-dich-duoc-khong-thumb.jpg"
-              ],
-              "updated_time": 1768830050000,
-              "og_url": "phim/tieng-yeu-nay-anh-dich-duoc-khong"
+        /**
+         * HƯỚNG DẪN THÊM PHIM MỚI:
+         * 1. Copy toàn bộ nội dung JSON API của phim bạn muốn thêm.
+         * 2. Dán nó vào trong mảng `moviesDatabase` bên dưới, cách nhau bằng dấu phẩy.
+         * 3. Chỉ cần paste nguyên block JSON vào là được.
+         */
+        const moviesDatabase = [
+            
+            // --- PHIM 1: Tiếng yêu này anh dịch được không? ---
+{
+  "status": "success",
+  "message": "",
+  "data": {
+    "seoOnPage": {
+      "og_type": "video.movie",
+      "titleHead": "Tiếng yêu này Thư dịch được không?-Can This Love Be Translated? (2026) [HD-Vietsub + Lồng Tiếng]",
+      "seoSchema": {
+        "@context": "https://schema.org",
+        "@type": "TvSeries",
+        "name": "Tiếng yêu này Thư dịch được không?-Can This Love Be Translated? (2026) [HD-Vietsub + Lồng Tiếng]",
+        "dateModified": "2025-12-19T20:25:09.000Z",
+        "dateCreated": "2025-12-19T20:25:09.000Z",
+        "url": "https://ophim17.cc/phim/tieng-yeu-nay-anh-dich-duoc-khong",
+        "datePublished": "2025-12-19T20:25:09.000Z",
+        "image": "https://img.ophim.live/uploads/movies/tieng-yeu-nay-anh-dich-duoc-khong-thumb.jpg",
+        "director": "OPhim.Live"
+      },
+      "descriptionHead": "Đi khắp thế giới để quay chương trình truyền hình, cảm xúc của một người nổi tiếng và phiên dịch viên của cô lại chẳng thể nào thông dịch. Liệu tình yêu có tìm được ngôn ngữ...",
+      "og_image": [
+        "movies/tieng-yeu-nay-anh-dich-duoc-khong-thumb.jpg",
+        "movies/tieng-yeu-nay-anh-dich-duoc-khong-thumb.jpg"
+      ],
+      "updated_time": 1768830050000,
+      "og_url": "phim/tieng-yeu-nay-anh-dich-duoc-khong"
+    },
+    "breadCrumb": [
+      {
+        "name": "Phim Bộ",
+        "slug": "/danh-sach/phim-bo",
+        "position": 2
+      },
+      {
+        "name": "Hàn Quốc",
+        "slug": "/quoc-gia/han-quoc",
+        "position": 3
+      },
+      {
+        "name": "Hài Hước",
+        "slug": "/the-loai/hai-huoc",
+        "position": 3
+      },
+      {
+        "name": "Chính kịch",
+        "slug": "/the-loai/chinh-kich",
+        "position": 3
+      },
+      {
+        "name": "Tiếng yêu này Thư dịch được không?",
+        "isCurrent": true,
+        "position": 4
+      }
+    ],
+    "params": {
+      "slug": "tieng-yeu-nay-anh-dich-duoc-khong"
+    },
+    "item": {
+      "tmdb": {
+        "type": "tv",
+        "id": "229891",
+        "season": 1,
+        "vote_average": 8.77,
+        "vote_count": 50
+      },
+      "imdb": {
+        "id": "tt30293074",
+        "vote_average": 0,
+        "vote_count": 0
+      },
+      "created": {
+        "time": "2025-12-19T20:25:09.000Z"
+      },
+      "modified": {
+        "time": "2026-01-19T13:40:50.000Z"
+      },
+      "_id": "69455235da6ce23e8e92ed8f",
+      "name": "Tiếng yêu này Thư dịch được không?",
+      "slug": "tieng-yeu-nay-thu-dich-duoc-khong",
+      "origin_name": "Can This Love Be Translated?",
+      "alternative_names": [
+        "이 사랑 통역 되나요?",
+        "이 사랑이 통역되나요?",
+        "Yi Sarang Tongyeok Dwenayo?",
+        "I Sarang Tongyeok Doenayo?",
+        "Чи можна перекласти цю любов?",
+        "Can You Interpret This Love?",
+        "Can This Love Be Interpreted?",
+        "Can Love Be Interpreted?",
+        "O Amor Pode Ser Traduzido?",
+        "爱情怎么翻译？",
+        "Can You Translate This Love?",
+        "Pode Este Amor Ser Traduzido?",
+        "Can Love Be Translated?"
+      ],
+      "content": "\u003Cp\u003EĐi khắp thế giới để quay chương trình truyền hình, cảm xúc của một người nổi tiếng và phiên dịch viên của cô lại chẳng thể nào thông dịch. Liệu tình yêu có tìm được ngôn ngữ riêng?\u003C/p\u003E",
+      "type": "series",
+      "status": "completed",
+      "thumb_url": "tieng-yeu-nay-anh-dich-duoc-khong-thumb.jpg",
+      "poster_url": "tieng-yeu-nay-anh-dich-duoc-khong-poster.jpg",
+      "is_copyright": false,
+      "sub_docquyen": false,
+      "chieurap": false,
+      "trailer_url": "https://www.youtube.com/watch?v=4ONpVZABzeU",
+      "time": "60 phút/tập",
+      "episode_current": "Hoàn tất (12/12)",
+      "episode_total": "12 Tập",
+      "quality": "HD",
+      "lang": "Vietsub + Lồng Tiếng",
+      "lang_key": [
+        "vs",
+        "lt"
+      ],
+      "notify": "",
+      "showtimes": "",
+      "year": 2026,
+      "view": 0,
+      "actor": [
+        "김선호",
+        "고윤정",
+        "福士蒼汰",
+        "이이담",
+        "최우성",
+        "김원해"
+      ],
+      "director": [
+        ""
+      ],
+      "category": [
+        {
+          "id": "620a221de0fc277084dfd1c1",
+          "name": "Hài Hước",
+          "slug": "hai-huoc"
+        },
+        {
+          "id": "620f3d2b91fa4af90ab697fe",
+          "name": "Chính kịch",
+          "slug": "chinh-kich"
+        }
+      ],
+      "country": [
+        {
+          "id": "620a2300e0fc277084dfd6d2",
+          "name": "Hàn Quốc",
+          "slug": "han-quoc"
+        }
+      ],
+      "episodes": [
+        {
+          "server_name": "Vietsub #1",
+          "is_ai": false,
+          "server_data": [
+            {
+              "name": "1",
+              "slug": "1",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E01_Tập 1",
+              "link_embed": "https://vip.opstream90.com/share/4eb9407d63d543de5afcd082d88280f4",
+              "link_m3u8": "https://vip.opstream90.com/20260116/22574_4eb9407d/index.m3u8"
             },
-            "breadCrumb": [
-              {
-                "name": "Phim Bộ",
-                "slug": "/danh-sach/phim-bo",
-                "position": 2
-              },
-              {
-                "name": "Hàn Quốc",
-                "slug": "/quoc-gia/han-quoc",
-                "position": 3
-              },
-              {
-                "name": "Hài Hước",
-                "slug": "/the-loai/hai-huoc",
-                "position": 3
-              },
-              {
-                "name": "Chính kịch",
-                "slug": "/the-loai/chinh-kich",
-                "position": 3
-              },
-              {
-                "name": "Tiếng yêu này Thư dịch được không?",
-                "isCurrent": true,
-                "position": 4
+            {
+              "name": "2",
+              "slug": "2",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E02_Tập 2",
+              "link_embed": "https://vip.opstream90.com/share/026947ba375f344b921f7c825ec784c1",
+              "link_m3u8": "https://vip.opstream90.com/20260116/22575_026947ba/index.m3u8"
+            },
+            {
+              "name": "3",
+              "slug": "3",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E03_Tập 3",
+              "link_embed": "https://vip.opstream90.com/share/a5311ea250c069821a160b1badc69ab8",
+              "link_m3u8": "https://vip.opstream90.com/20260116/22576_a5311ea2/index.m3u8"
+            },
+            {
+              "name": "4",
+              "slug": "4",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E04_Tập 4",
+              "link_embed": "https://vip.opstream90.com/share/3d5ac5d089b2a3265e292f374567eacf",
+              "link_m3u8": "https://vip.opstream90.com/20260116/22577_3d5ac5d0/index.m3u8"
+            },
+            {
+              "name": "5",
+              "slug": "5",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E05_Tập 5",
+              "link_embed": "https://vip.opstream90.com/share/8e6a4217e8a7391fdc7e89a120fe5d86",
+              "link_m3u8": "https://vip.opstream90.com/20260116/22578_8e6a4217/index.m3u8"
+            },
+            {
+              "name": "6",
+              "slug": "6",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E06_Tập 6",
+              "link_embed": "https://vip.opstream90.com/share/599b61ce80e2d1ed26b62393d8c93c3c",
+              "link_m3u8": "https://vip.opstream90.com/20260116/22579_599b61ce/index.m3u8"
+            },
+            {
+              "name": "7",
+              "slug": "7",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E07_Tập 7",
+              "link_embed": "https://vip.opstream90.com/share/972a8c3bc82fbee8f38bdb3edd3a3ff5",
+              "link_m3u8": "https://vip.opstream90.com/20260116/22580_972a8c3b/index.m3u8"
+            },
+            {
+              "name": "8",
+              "slug": "8",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E08_Tập 8",
+              "link_embed": "https://vip.opstream90.com/share/2393d7a6a3258894acc34581978453fa",
+              "link_m3u8": "https://vip.opstream90.com/20260116/22581_2393d7a6/index.m3u8"
+            },
+            {
+              "name": "9",
+              "slug": "9",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E09_Tập 9",
+              "link_embed": "https://vip.opstream90.com/share/3e30c0a4a1617a0deacf755804b59a12",
+              "link_m3u8": "https://vip.opstream90.com/20260116/22582_3e30c0a4/index.m3u8"
+            },
+            {
+              "name": "10",
+              "slug": "10",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E10_Tập 10",
+              "link_embed": "https://vip.opstream90.com/share/94d231f11cdc1fae024849f33f7a7156",
+              "link_m3u8": "https://vip.opstream90.com/20260116/22583_94d231f1/index.m3u8"
+            },
+            {
+              "name": "11",
+              "slug": "11",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E11_Tập 11",
+              "link_embed": "https://vip.opstream90.com/share/266e3c74976fe48b49c4833f6c9f0d33",
+              "link_m3u8": "https://vip.opstream90.com/20260116/22584_266e3c74/index.m3u8"
+            },
+            {
+              "name": "12",
+              "slug": "12",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E12_Tập 12",
+              "link_embed": "https://vip.opstream90.com/share/b6d7a951171944f9a12d2812cd058251",
+              "link_m3u8": "https://vip.opstream90.com/20260116/22585_b6d7a951/index.m3u8"
+            }
+          ]
+        },
+        {
+          "server_name": "Lồng Tiếng #1",
+          "is_ai": false,
+          "server_data": [
+            {
+              "name": "1",
+              "slug": "1",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E01_Tập 1",
+              "link_embed": "https://vip.opstream90.com/share/57750683947a2891662f18320e8d476b",
+              "link_m3u8": "https://vip.opstream90.com/20260119/22737_57750683/index.m3u8"
+            },
+            {
+              "name": "2",
+              "slug": "2",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E02_Tập 2",
+              "link_embed": "https://vip.opstream90.com/share/dd7a4d894a5900000559cb999995b933",
+              "link_m3u8": "https://vip.opstream90.com/20260119/22738_dd7a4d89/index.m3u8"
+            },
+            {
+              "name": "3",
+              "slug": "3",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E03_Tập 3",
+              "link_embed": "https://vip.opstream90.com/share/7ba3d18c5505882a3cd13357386135fb",
+              "link_m3u8": "https://vip.opstream90.com/20260119/22739_7ba3d18c/index.m3u8"
+            },
+            {
+              "name": "4",
+              "slug": "4",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E04_Tập 4",
+              "link_embed": "https://vip.opstream90.com/share/9938b594f4c50c21ed235b2f92e82177",
+              "link_m3u8": "https://vip.opstream90.com/20260119/22740_9938b594/index.m3u8"
+            },
+            {
+              "name": "5",
+              "slug": "5",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E05_Tập 5",
+              "link_embed": "https://vip.opstream90.com/share/cf8377e918bc9ca5e173d0226382e338",
+              "link_m3u8": "https://vip.opstream90.com/20260119/22741_cf8377e9/index.m3u8"
+            },
+            {
+              "name": "6",
+              "slug": "6",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E06_Tập 6",
+              "link_embed": "https://vip.opstream90.com/share/1913e525d6acdf2a6196b42b3a749035",
+              "link_m3u8": "https://vip.opstream90.com/20260119/22742_1913e525/index.m3u8"
+            },
+            {
+              "name": "7",
+              "slug": "7",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E07_Tập 7",
+              "link_embed": "https://vip.opstream90.com/share/32e8e6c03f3fa46eb672dc5680bff7da",
+              "link_m3u8": "https://vip.opstream90.com/20260119/22743_32e8e6c0/index.m3u8"
+            },
+            {
+              "name": "8",
+              "slug": "8",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E08_Tập 8",
+              "link_embed": "https://vip.opstream90.com/share/5ebd5ccc464411ffe414dd5729c9c835",
+              "link_m3u8": "https://vip.opstream90.com/20260119/22744_5ebd5ccc/index.m3u8"
+            },
+            {
+              "name": "9",
+              "slug": "9",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E09_Tập 9",
+              "link_embed": "https://vip.opstream90.com/share/6b19397c392fd148c5873c9ca2a87f26",
+              "link_m3u8": "https://vip.opstream90.com/20260119/22745_6b19397c/index.m3u8"
+            },
+            {
+              "name": "10",
+              "slug": "10",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E10_Tập 10",
+              "link_embed": "https://vip.opstream90.com/share/0178653660403a821a543d63efe814ba",
+              "link_m3u8": "https://vip.opstream90.com/20260119/22746_01786536/index.m3u8"
+            },
+            {
+              "name": "11",
+              "slug": "11",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E11_Tập 11",
+              "link_embed": "https://vip.opstream90.com/share/68b89148ade03cc8c79cf6e9ace396c3",
+              "link_m3u8": "https://vip.opstream90.com/20260119/22747_68b89148/index.m3u8"
+            },
+            {
+              "name": "12",
+              "slug": "12",
+              "filename": "Tiếng yêu này, anh dịch được không__S01E12_Tập 12",
+              "link_embed": "https://vip.opstream90.com/share/98c2458a2f3407013b6765bde3b71af6",
+              "link_m3u8": "https://vip.opstream90.com/20260119/22748_98c2458a/index.m3u8"
+            }
+          ]
+        }
+      ]
+    },
+    "APP_DOMAIN_CDN_IMAGE": "https://img.ophim.live"
+  }
+},
+
+            // --- PHIM 2: Doraemon (Ví dụ thêm) ---
+            {
+              "status": "success",
+              "message": "",
+              "data": {
+                "seoOnPage": {
+                    "seoSchema": {
+                        "image": "https://img.ophim.live/uploads/movies/doraemon-nobita-va-cuoc-chien-vu-tru-ti-hon-thumb.jpg"
+                    }
+                },
+                "item": {
+                    "name": "Doraemon: Nobita - Cuộc Chiến Vũ Trụ Tí Hon",
+                    "origin_name": "Doraemon: Nobita no Little Wars",
+                    "content": "<p>Nobita đã có thể nhìn thấy một người ngoài hành tinh hình người tên là Papi...</p>",
+                    "type": "single",
+                    "status": "completed",
+                    "thumb_url": "doraemon-nobita-va-cuoc-chien-vu-tru-ti-hon-thumb.jpg",
+                    "poster_url": "doraemon-nobita-va-cuoc-chien-vu-tru-ti-hon-poster.jpg",
+                    "time": "108 phút",
+                    "quality": "HD",
+                    "lang": "Vietsub",
+                    "year": 2022,
+                    "category": [{"name": "Viễn Tưởng"}, {"name": "Phiêu Lưu"}],
+                    "country": [{"name": "Nhật Bản"}],
+                    "episodes": [
+                        {
+                            "server_name": "Vietsub #1",
+                            "server_data": [
+                                {
+                                    "name": "Full",
+                                    "link_embed": "https://vip.opstream15.com/share/7f9e4c8e1de05725d2b30298eda1f306"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "APP_DOMAIN_CDN_IMAGE": "https://img.ophim.live"
               }
-            ],
-            "params": {
-              "slug": "tieng-yeu-nay-anh-dich-duoc-khong"
             },
-            "item": {
-              "tmdb": {
-                "type": "tv",
-                "id": "229891",
-                "season": 1,
-                "vote_average": 8.77,
-                "vote_count": 50
-              },
-              "imdb": {
-                "id": "tt30293074",
-                "vote_average": 0,
-                "vote_count": 0
-              },
-              "created": {
-                "time": "2025-12-19T20:25:09.000Z"
-              },
-              "modified": {
-                "time": "2026-01-19T13:40:50.000Z"
-              },
-              "_id": "69455235da6ce23e8e92ed8f",
-              "name": "Tiếng yêu này Thư dịch được không?",
-              "slug": "tieng-yeu-nay-thu-dich-duoc-khong",
-              "origin_name": "Can This Love Be Translated?",
-              "alternative_names": [
-                "이 사랑 통역 되나요?",
-                "이 사랑이 통역되나요?",
-                "Yi Sarang Tongyeok Dwenayo?",
-                "I Sarang Tongyeok Doenayo?",
-                "Чи можна перекласти цю любов?",
-                "Can You Interpret This Love?",
-                "Can This Love Be Interpreted?",
-                "Can Love Be Interpreted?",
-                "O Amor Pode Ser Traduzido?",
-                "爱情怎么翻译？",
-                "Can You Translate This Love?",
-                "Pode Este Amor Ser Traduzido?",
-                "Can Love Be Translated?"
-              ],
-              "content": "<p>Đi khắp thế giới để quay chương trình truyền hình, cảm xúc của một người nổi tiếng và phiên dịch viên của cô lại chẳng thể nào thông dịch. Liệu tình yêu có tìm được ngôn ngữ riêng?</p>",
-              "type": "series",
-              "status": "completed",
-              "thumb_url": "tieng-yeu-nay-anh-dich-duoc-khong-thumb.jpg",
-              "poster_url": "tieng-yeu-nay-anh-dich-duoc-khong-poster.jpg",
-              "is_copyright": false,
-              "sub_docquyen": false,
-              "chieurap": false,
-              "trailer_url": "https://www.youtube.com/watch?v=4ONpVZABzeU",
-              "time": "60 phút/tập",
-              "episode_current": "Hoàn tất (12/12)",
-              "episode_total": "12 Tập",
-              "quality": "HD",
-              "lang": "Vietsub + Lồng Tiếng",
-              "lang_key": [
-                "vs",
-                "lt"
-              ],
-              "notify": "",
-              "showtimes": "",
-              "year": 2026,
-              "view": 0,
-              "actor": [
-                "김선호",
-                "고윤정",
-                "福士蒼汰",
-                "이이담",
-                "최우성",
-                "김원해"
-              ],
-              "director": [
-                ""
-              ],
-              "category": [
-                {
-                  "id": "620a221de0fc277084dfd1c1",
-                  "name": "Hài Hước",
-                  "slug": "hai-huoc"
-                },
-                {
-                  "id": "620f3d2b91fa4af90ab697fe",
-                  "name": "Chính kịch",
-                  "slug": "chinh-kich"
+
+            // --- ADD NEW MOVIE HERE (DÁN PHIM MỚI VÀO ĐÂY) ---
+            
+            
+        ];
+    </script>
+
+    <!-- App Logic -->
+    <script>
+        const app = {
+            init: function() {
+                this.cacheDOM();
+                this.renderMovieList();
+                if (moviesDatabase.length > 0) {
+                    this.loadMovie(0); // Load phim đầu tiên mặc định
                 }
-              ],
-              "country": [
-                {
-                  "id": "620a2300e0fc277084dfd6d2",
-                  "name": "Hàn Quốc",
-                  "slug": "han-quoc"
-                }
-              ],
-              "episodes": [
-                {
-                  "server_name": "Vietsub #1",
-                  "is_ai": false,
-                  "server_data": [
-                    {
-                      "name": "1",
-                      "slug": "1",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E01_Tập 1",
-                      "link_embed": "https://vip.opstream90.com/share/4eb9407d63d543de5afcd082d88280f4",
-                      "link_m3u8": "https://vip.opstream90.com/20260116/22574_4eb9407d/index.m3u8"
-                    },
-                    {
-                      "name": "2",
-                      "slug": "2",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E02_Tập 2",
-                      "link_embed": "https://vip.opstream90.com/share/026947ba375f344b921f7c825ec784c1",
-                      "link_m3u8": "https://vip.opstream90.com/20260116/22575_026947ba/index.m3u8"
-                    },
-                    {
-                      "name": "3",
-                      "slug": "3",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E03_Tập 3",
-                      "link_embed": "https://vip.opstream90.com/share/a5311ea250c069821a160b1badc69ab8",
-                      "link_m3u8": "https://vip.opstream90.com/20260116/22576_a5311ea2/index.m3u8"
-                    },
-                    {
-                      "name": "4",
-                      "slug": "4",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E04_Tập 4",
-                      "link_embed": "https://vip.opstream90.com/share/3d5ac5d089b2a3265e292f374567eacf",
-                      "link_m3u8": "https://vip.opstream90.com/20260116/22577_3d5ac5d0/index.m3u8"
-                    },
-                    {
-                      "name": "5",
-                      "slug": "5",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E05_Tập 5",
-                      "link_embed": "https://vip.opstream90.com/share/8e6a4217e8a7391fdc7e89a120fe5d86",
-                      "link_m3u8": "https://vip.opstream90.com/20260116/22578_8e6a4217/index.m3u8"
-                    },
-                    {
-                      "name": "6",
-                      "slug": "6",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E06_Tập 6",
-                      "link_embed": "https://vip.opstream90.com/share/599b61ce80e2d1ed26b62393d8c93c3c",
-                      "link_m3u8": "https://vip.opstream90.com/20260116/22579_599b61ce/index.m3u8"
-                    },
-                    {
-                      "name": "7",
-                      "slug": "7",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E07_Tập 7",
-                      "link_embed": "https://vip.opstream90.com/share/972a8c3bc82fbee8f38bdb3edd3a3ff5",
-                      "link_m3u8": "https://vip.opstream90.com/20260116/22580_972a8c3b/index.m3u8"
-                    },
-                    {
-                      "name": "8",
-                      "slug": "8",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E08_Tập 8",
-                      "link_embed": "https://vip.opstream90.com/share/2393d7a6a3258894acc34581978453fa",
-                      "link_m3u8": "https://vip.opstream90.com/20260116/22581_2393d7a6/index.m3u8"
-                    },
-                    {
-                      "name": "9",
-                      "slug": "9",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E09_Tập 9",
-                      "link_embed": "https://vip.opstream90.com/share/3e30c0a4a1617a0deacf755804b59a12",
-                      "link_m3u8": "https://vip.opstream90.com/20260116/22582_3e30c0a4/index.m3u8"
-                    },
-                    {
-                      "name": "10",
-                      "slug": "10",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E10_Tập 10",
-                      "link_embed": "https://vip.opstream90.com/share/94d231f11cdc1fae024849f33f7a7156",
-                      "link_m3u8": "https://vip.opstream90.com/20260116/22583_94d231f1/index.m3u8"
-                    },
-                    {
-                      "name": "11",
-                      "slug": "11",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E11_Tập 11",
-                      "link_embed": "https://vip.opstream90.com/share/266e3c74976fe48b49c4833f6c9f0d33",
-                      "link_m3u8": "https://vip.opstream90.com/20260116/22584_266e3c74/index.m3u8"
-                    },
-                    {
-                      "name": "12",
-                      "slug": "12",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E12_Tập 12",
-                      "link_embed": "https://vip.opstream90.com/share/b6d7a951171944f9a12d2812cd058251",
-                      "link_m3u8": "https://vip.opstream90.com/20260116/22585_b6d7a951/index.m3u8"
-                    }
-                  ]
-                },
-                {
-                  "server_name": "Lồng Tiếng #1",
-                  "is_ai": false,
-                  "server_data": [
-                    {
-                      "name": "1",
-                      "slug": "1",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E01_Tập 1",
-                      "link_embed": "https://vip.opstream90.com/share/57750683947a2891662f18320e8d476b",
-                      "link_m3u8": "https://vip.opstream90.com/20260119/22737_57750683/index.m3u8"
-                    },
-                    {
-                      "name": "2",
-                      "slug": "2",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E02_Tập 2",
-                      "link_embed": "https://vip.opstream90.com/share/dd7a4d894a5900000559cb999995b933",
-                      "link_m3u8": "https://vip.opstream90.com/20260119/22738_dd7a4d89/index.m3u8"
-                    },
-                    {
-                      "name": "3",
-                      "slug": "3",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E03_Tập 3",
-                      "link_embed": "https://vip.opstream90.com/share/7ba3d18c5505882a3cd13357386135fb",
-                      "link_m3u8": "https://vip.opstream90.com/20260119/22739_7ba3d18c/index.m3u8"
-                    },
-                    {
-                      "name": "4",
-                      "slug": "4",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E04_Tập 4",
-                      "link_embed": "https://vip.opstream90.com/share/9938b594f4c50c21ed235b2f92e82177",
-                      "link_m3u8": "https://vip.opstream90.com/20260119/22740_9938b594/index.m3u8"
-                    },
-                    {
-                      "name": "5",
-                      "slug": "5",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E05_Tập 5",
-                      "link_embed": "https://vip.opstream90.com/share/cf8377e918bc9ca5e173d0226382e338",
-                      "link_m3u8": "https://vip.opstream90.com/20260119/22741_cf8377e9/index.m3u8"
-                    },
-                    {
-                      "name": "6",
-                      "slug": "6",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E06_Tập 6",
-                      "link_embed": "https://vip.opstream90.com/share/1913e525d6acdf2a6196b42b3a749035",
-                      "link_m3u8": "https://vip.opstream90.com/20260119/22742_1913e525/index.m3u8"
-                    },
-                    {
-                      "name": "7",
-                      "slug": "7",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E07_Tập 7",
-                      "link_embed": "https://vip.opstream90.com/share/32e8e6c03f3fa46eb672dc5680bff7da",
-                      "link_m3u8": "https://vip.opstream90.com/20260119/22743_32e8e6c0/index.m3u8"
-                    },
-                    {
-                      "name": "8",
-                      "slug": "8",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E08_Tập 8",
-                      "link_embed": "https://vip.opstream90.com/share/5ebd5ccc464411ffe414dd5729c9c835",
-                      "link_m3u8": "https://vip.opstream90.com/20260119/22744_5ebd5ccc/index.m3u8"
-                    },
-                    {
-                      "name": "9",
-                      "slug": "9",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E09_Tập 9",
-                      "link_embed": "https://vip.opstream90.com/share/6b19397c392fd148c5873c9ca2a87f26",
-                      "link_m3u8": "https://vip.opstream90.com/20260119/22745_6b19397c/index.m3u8"
-                    },
-                    {
-                      "name": "10",
-                      "slug": "10",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E10_Tập 10",
-                      "link_embed": "https://vip.opstream90.com/share/0178653660403a821a543d63efe814ba",
-                      "link_m3u8": "https://vip.opstream90.com/20260119/22746_01786536/index.m3u8"
-                    },
-                    {
-                      "name": "11",
-                      "slug": "11",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E11_Tập 11",
-                      "link_embed": "https://vip.opstream90.com/share/68b89148ade03cc8c79cf6e9ace396c3",
-                      "link_m3u8": "https://vip.opstream90.com/20260119/22747_68b89148/index.m3u8"
-                    },
-                    {
-                      "name": "12",
-                      "slug": "12",
-                      "filename": "Tiếng yêu này, anh dịch được không__S01E12_Tập 12",
-                      "link_embed": "https://vip.opstream90.com/share/98c2458a2f3407013b6765bde3b71af6",
-                      "link_m3u8": "https://vip.opstream90.com/20260119/22748_98c2458a/index.m3u8"
-                    }
-                  ]
-                }
-              ]
             },
-            "APP_DOMAIN_CDN_IMAGE": "https://img.ophim.live"
-          }
+
+            cacheDOM: function() {
+                this.movieListContainer = document.getElementById('movie-list');
+                this.videoPlayer = document.getElementById('video-player');
+                this.playerPlaceholder = document.getElementById('player-placeholder');
+                this.movieTitle = document.getElementById('movie-title');
+                this.movieOriginName = document.getElementById('movie-origin-name');
+                this.movieDesc = document.getElementById('movie-description');
+                this.moviePoster = document.getElementById('movie-poster');
+                this.movieBadges = document.getElementById('movie-badges');
+                this.movieCategories = document.getElementById('movie-categories');
+                this.episodeSection = document.getElementById('episode-section');
+                this.serverList = document.getElementById('server-list');
+                this.movieCount = document.getElementById('movie-count');
+            },
+
+            renderMovieList: function() {
+                this.movieListContainer.innerHTML = '';
+                this.movieCount.textContent = moviesDatabase.length;
+
+                moviesDatabase.forEach((movie, index) => {
+                    const item = movie.data.item;
+                    const thumbBase = movie.data.APP_DOMAIN_CDN_IMAGE;
+                    const thumbUrl = `${thumbBase}/uploads/movies/${item.thumb_url}`;
+
+                    const el = document.createElement('div');
+                    el.className = `movie-item p-3 flex gap-3 cursor-pointer hover:bg-gray-700 transition border-b border-gray-700 last:border-0`;
+                    el.onclick = () => this.loadMovie(index);
+                    el.id = `movie-item-${index}`;
+
+                    el.innerHTML = `
+                        <img src="${thumbUrl}" class="w-16 h-24 object-cover rounded shadow-sm bg-gray-600" alt="${item.name}">
+                        <div class="flex flex-col justify-center min-w-0">
+                            <h4 class="font-bold text-sm text-gray-200 truncate pr-2 box-border leading-tight mb-1">${item.name}</h4>
+                            <span class="text-xs text-gray-400 italic truncate">${item.origin_name}</span>
+                            <div class="flex gap-1 mt-1">
+                                <span class="bg-gray-600 text-[10px] px-1.5 py-0.5 rounded text-gray-300">${item.year}</span>
+                                <span class="bg-blue-900 text-[10px] px-1.5 py-0.5 rounded text-blue-200">${item.lang.split('+')[0].trim()}</span>
+                            </div>
+                        </div>
+                    `;
+                    this.movieListContainer.appendChild(el);
+                });
+            },
+
+            loadMovie: function(index) {
+                const movie = moviesDatabase[index];
+                const data = movie.data;
+                const item = data.item;
+                const cdnDomain = data.APP_DOMAIN_CDN_IMAGE;
+
+                // 1. Highlight UI Sidebar
+                document.querySelectorAll('.movie-item').forEach(el => el.classList.remove('active'));
+                const activeItem = document.getElementById(`movie-item-${index}`);
+                if(activeItem) activeItem.classList.add('active');
+
+                // 2. Info Update
+                this.movieTitle.textContent = item.name;
+                this.movieOriginName.textContent = item.origin_name;
+                // Xử lý content an toàn or đơn giản
+                this.movieDesc.innerHTML = item.content;
+                this.moviePoster.src = `${cdnDomain}/uploads/movies/${item.thumb_url}`;
+
+                // 3. Badges
+                this.movieBadges.innerHTML = `
+                    <span class="bg-blue-600 text-white px-2 py-1 rounded border border-blue-500 shadow-sm shadow-blue-500/50">${item.quality}</span>
+                    <span class="bg-red-600 text-white px-2 py-1 rounded border border-red-500">${item.lang}</span>
+                    <span class="bg-gray-700 text-gray-300 px-2 py-1 rounded border border-gray-600">${item.year}</span>
+                    <span class="bg-gray-700 text-gray-300 px-2 py-1 rounded border border-gray-600">${item.time}</span>
+                `;
+
+                // 4. Categories
+                this.movieCategories.innerHTML = '';
+                if(item.category) {
+                    item.category.forEach(cat => {
+                        const span = document.createElement('span');
+                        span.className = "bg-gray-800 hover:bg-gray-700 text-blue-400 border border-gray-600 px-3 py-1 rounded-full text-xs transition cursor-default";
+                        span.textContent = `# ${cat.name}`;
+                        this.movieCategories.appendChild(span);
+                    });
+                }
+
+                // 5. Episodes & Player Logic
+                this.serverList.innerHTML = '';
+                
+                if (item.episodes && item.episodes.length > 0) {
+                    this.episodeSection.classList.remove('hidden');
+                    this.playerPlaceholder.classList.add('hidden');
+                    
+                    let firstEpLink = null;
+
+                    item.episodes.forEach((server) => {
+                        const serverDiv = document.createElement('div');
+                        serverDiv.innerHTML = `<h4 class="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider border-l-2 border-blue-500 pl-2">${server.server_name}</h4>`;
+                        const btnsDiv = document.createElement('div');
+                        btnsDiv.className = "flex flex-wrap gap-2";
+
+                        server.server_data.forEach((ep) => {
+                            if (!firstEpLink) firstEpLink = ep.link_embed;
+
+                            const btn = document.createElement('button');
+                            btn.className = "episode-btn px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded shadow-sm transition min-w-[3rem]";
+                            btn.textContent = ep.name;
+                            btn.onclick = () => {
+                                this.playVideo(ep.link_embed);
+                                // Active button visual
+                                document.querySelectorAll('.episode-btn').forEach(b => b.classList.remove('bg-blue-600', 'ring-2', 'ring-blue-400'));
+                                btn.classList.remove('bg-gray-700', 'hover:bg-gray-600');
+                                btn.classList.add('bg-blue-600', 'ring-2', 'ring-blue-400');
+                            };
+                            btnsDiv.appendChild(btn);
+                        });
+
+                        serverDiv.appendChild(btnsDiv);
+                        this.serverList.appendChild(serverDiv);
+                    });
+
+                    // Auto load first episode
+                    if(firstEpLink) {
+                        this.playVideo(firstEpLink);
+                        // Highlight first button visually manually if needed, 
+                        // but usually user interaction is better. 
+                        // Let's sim click on first button of first server? 
+                        const firstBtn = this.serverList.querySelector('button');
+                        if(firstBtn) {
+                            firstBtn.classList.remove('bg-gray-700', 'hover:bg-gray-600');
+                            firstBtn.classList.add('bg-blue-600', 'ring-2', 'ring-blue-400');
+                        }
+                    }
+
+                } else {
+                    this.episodeSection.classList.add('hidden');
+                    this.playerPlaceholder.classList.remove('hidden');
+                    this.videoPlayer.src = "";
+                }
+            },
+
+            playVideo: function(url) {
+                this.videoPlayer.src = url;
+            }
         };
 
-        // Hàm để load dữ liệu vào DOM
-        function renderMovie() {
-            const data = movieData.data;
-            const item = data.item;
-            const cdnDomain = data.APP_DOMAIN_CDN_IMAGE;
-
-            // 1. Cập nhật thông tin text cơ bản
-            document.title = `Đang xem: ${item.name}`;
-            document.getElementById('movie-title').textContent = item.name;
-            document.getElementById('movie-origin-name').textContent = item.origin_name;
-            document.getElementById('movie-description').innerHTML = item.content;
-            
-            // 2. Cập nhật Poster
-            const posterImg = document.getElementById('movie-poster');
-            // Logic lấy ảnh: dùng cdn + thumb_url
-            const posterUrl = `${cdnDomain}/uploads/movies/${item.thumb_url}`;
-            posterImg.src = posterUrl;
-
-            // Handle empty actors/director
-            if(item.director && item.director[0] !== "") {
-                 document.getElementById('movie-director').textContent = item.director.join(", ");
-            } else {
-                document.getElementById('movie-director').parentElement.style.display = 'none';
-            }
-            if(item.actor && item.actor.length > 0) {
-                 document.getElementById('movie-actors').textContent = item.actor.join(", ");
-            } else {
-                 document.getElementById('movie-actors').parentElement.style.display = 'none';
-            }
-
-
-            // 3. Cập nhật Badges
-            document.getElementById('badge-quality').textContent = item.quality;
-            document.getElementById('badge-lang').textContent = item.lang;
-            document.getElementById('badge-year').textContent = item.year;
-            document.getElementById('badge-time').textContent = item.time;
-
-            // 4. Cập nhật Categories
-            const categoriesContainer = document.getElementById('movie-categories');
-            categoriesContainer.innerHTML = '';
-            item.category.forEach(cat => {
-                const span = document.createElement('span');
-                span.className = "bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1 rounded-full text-xs transition cursor-pointer flex items-center gap-1";
-                span.innerHTML = `<i class="fas fa-tag text-[10px] text-blue-400"></i> ${cat.name}`;
-                categoriesContainer.appendChild(span);
-            });
-
-            // 5. Cập nhật Breadcrumb
-            const breadcrumbContainer = document.getElementById('breadcrumb');
-            breadcrumbContainer.innerHTML = '';
-            data.breadCrumb.forEach((crumb, index) => {
-                const isLast = index === data.breadCrumb.length - 1;
-                
-                if (isLast) {
-                    const span = document.createElement('span');
-                    span.className = "text-white font-medium truncate max-w-[200px] md:max-w-none";
-                    span.textContent = crumb.name;
-                    breadcrumbContainer.appendChild(span);
-                } else {
-                    const link = document.createElement('a');
-                    link.className = "hover:text-blue-400 cursor-pointer transition";
-                    link.textContent = crumb.name;
-                    
-                    const separator = document.createElement('i');
-                    separator.className = "fas fa-chevron-right text-[10px] mx-1 text-gray-600";
-                    breadcrumbContainer.appendChild(link);
-                    breadcrumbContainer.appendChild(separator);
-                }
-            });
-
-
-            // 6. Xử lý logic tải Video và Danh sách tập phim (Series)
-            const videoPlayer = document.getElementById('video-player');
-            const episodeSection = document.getElementById('episode-section');
-            const serverList = document.getElementById('server-list');
-            
-            // Clear old data
-            serverList.innerHTML = '';
-
-            // Nếu là series và có danh sách tập
-            if (item.episodes && item.episodes.length > 0) {
-                // Hiển thị phần chọn tập phim
-                episodeSection.classList.remove('hidden');
-                
-                let isFirstEpisodeLoaded = false;
-                
-                // Lặp qua từng cụm server (VD: Vietsub #1, Lồng Tiếng #1)
-                item.episodes.forEach((server, serverIndex) => {
-                    const serverBlock = document.createElement('div');
-                    
-                    // Tên server
-                    const serverTitle = document.createElement('h4');
-                    serverTitle.className = "text-md font-semibold text-gray-300 mb-2 flex items-center gap-2";
-                    serverTitle.innerHTML = `<i class="fas fa-server text-sm"></i> ${server.server_name}`;
-                    serverBlock.appendChild(serverTitle);
-                    
-                    // Container chứa các nút bấm tập phim
-                    const episodesContainer = document.createElement('div');
-                    episodesContainer.className = "flex flex-wrap gap-2";
-                    
-                    // Lặp qua từng tập của server
-                    server.server_data.forEach((ep) => {
-                        const btn = document.createElement('button');
-                        btn.className = "episode-btn px-4 py-2 bg-gray-700 hover:bg-blue-600 text-sm font-medium rounded transition text-white border border-gray-600 hover:border-blue-500 min-w-[80px]";
-                        btn.textContent = `Tập ${ep.name}`;
-                        
-                        // Xử lý sự kiện khi click chọn tập
-                        btn.onclick = () => {
-                            videoPlayer.src = ep.link_embed;
-                            // Reset màu toàn bộ nút
-                            document.querySelectorAll('.episode-btn').forEach(b => {
-                                // Reset về trạng thái mặc định
-                                b.classList.remove('bg-blue-600', 'border-blue-500');
-                                b.classList.add('bg-gray-700', 'border-gray-600');
-                            });
-                            // Làm nổi bật nút đang được chọn
-                            btn.classList.remove('bg-gray-700', 'border-gray-600');
-                            btn.classList.add('bg-blue-600', 'border-blue-500');
-                            
-                            // Scroll to player for mobile convenience
-                            videoPlayer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        };
-                        
-                        // Tự động load tập đầu tiên của server đầu tiên
-                        if (!isFirstEpisodeLoaded) {
-                            videoPlayer.src = ep.link_embed;
-                            btn.classList.remove('bg-gray-700', 'border-gray-600');
-                            btn.classList.add('bg-blue-600', 'border-blue-500');
-                            isFirstEpisodeLoaded = true;
-                        }
-                        
-                        episodesContainer.appendChild(btn);
-                    });
-                    
-                    serverBlock.appendChild(episodesContainer);
-                    serverList.appendChild(serverBlock);
-                });
-            } else {
-                // Trong trường hợp mảng lỗi không có tập phim
-                videoPlayer.src = "";
-            }
-        }
-
-        // Chạy hàm render khi trang tải xong
-        document.addEventListener('DOMContentLoaded', renderMovie);
+        document.addEventListener('DOMContentLoaded', () => app.init());
     </script>
 </body>
 </html>
