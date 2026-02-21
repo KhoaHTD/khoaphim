@@ -8,30 +8,30 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1f2937; }
-        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        ::-webkit-scrollbar-track { background: #fce7f3; } /* pink-100 */
+        ::-webkit-scrollbar-thumb { background: #f472b6; border-radius: 4px; } /* pink-400 */
+        ::-webkit-scrollbar-thumb:hover { background: #ec4899; } /* pink-500 */
         
         /* Hiệu ứng active cho phim đang chọn */
         .movie-item.active {
-            background-color: #374151; /* gray-700 */
-            border-left: 4px solid #3b82f6; /* blue-500 */
+            background-color: #fce7f3; /* pink-100 */
+            border-left: 4px solid #db2777; /* pink-600 */
         }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-200 font-sans antialiased min-h-screen flex flex-col">
+<body class="bg-pink-50 text-gray-800 font-sans antialiased min-h-screen flex flex-col">
 
     <!-- Header -->
-    <header class="bg-gray-800 shadow-md sticky top-0 z-50 border-b border-gray-700">
+    <header class="bg-white shadow-md sticky top-0 z-50 border-b border-pink-200">
         <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
             <div class="flex items-center gap-2 cursor-pointer" onclick="location.reload()">
-                <i class="fas fa-play-circle text-blue-500 text-3xl"></i>
-                <h1 class="text-xl font-bold text-white tracking-wider">Rạp chiếu phim của K&T</h1>
+                <i class="fas fa-play-circle text-pink-500 text-3xl"></i>
+                <h1 class="text-xl font-bold text-pink-600 tracking-wider">Rạp chiếu phim của K&T</h1>
             </div>
             <!-- Search đơn giản (UI only) -->
             <div class="relative hidden md:block">
-                <input type="text" placeholder="Tìm kiếm phim..." class="bg-gray-700 text-gray-200 px-4 py-2 rounded-full border border-gray-600 focus:outline-none focus:border-blue-500 w-64 text-sm">
-                <i class="fas fa-search absolute right-3 top-2.5 text-gray-400 text-sm"></i>
+                <input type="text" placeholder="Tìm kiếm phim..." class="bg-pink-50 text-gray-700 px-4 py-2 rounded-full border border-pink-200 focus:outline-none focus:border-pink-500 w-64 text-sm placeholder-pink-300">
+                <i class="fas fa-search absolute right-3 top-2.5 text-pink-400 text-sm"></i>
             </div>
         </div>
     </header>
@@ -40,10 +40,10 @@
         
         <!-- Left Column: Playlist / Movie List -->
         <aside class="w-full lg:w-1/4 flex-shrink-0 order-2 lg:order-1">
-            <div class="bg-gray-800 rounded-xl overflow-hidden shadow-lg border border-gray-700 sticky top-24">
-                <div class="p-4 bg-gray-750 border-b border-gray-700 flex justify-between items-center">
-                    <h3 class="font-bold text-white"><i class="fas fa-list mr-2 text-blue-400"></i>Danh Sách Phim</h3>
-                    <span class="text-xs bg-blue-600 px-2 py-0.5 rounded text-white" id="movie-count">0</span>
+            <div class="bg-white rounded-xl overflow-hidden shadow-lg border border-pink-100 sticky top-24">
+                <div class="p-4 bg-pink-50 border-b border-pink-100 flex justify-between items-center">
+                    <h3 class="font-bold text-gray-800"><i class="fas fa-list mr-2 text-pink-500"></i>Danh Sách Phim</h3>
+                    <span class="text-xs bg-pink-500 px-2 py-0.5 rounded text-white" id="movie-count">0</span>
                 </div>
                 
                 <div class="overflow-y-auto max-h-[80vh]" id="movie-list">
@@ -56,7 +56,7 @@
         <main class="w-full lg:w-3/4 order-1 lg:order-2 flex flex-col gap-6">
             
             <!-- Video Player Area -->
-            <div class="w-full bg-black rounded-xl overflow-hidden shadow-2xl border border-gray-800 relative z-10">
+            <div class="w-full bg-black rounded-xl overflow-hidden shadow-2xl border border-pink-200 relative z-10">
                 <div class="relative w-full h-0 pb-[56.25%]">
                     <iframe id="video-player" 
                             class="absolute top-0 left-0 w-full h-full" 
@@ -67,7 +67,7 @@
                             allowfullscreen>
                     </iframe>
                     <!-- Overlay placeholder khi chưa chọn phim hoặc lỗi -->
-                    <div id="player-placeholder" class="absolute inset-0 flex items-center justify-center bg-gray-900 text-gray-500 hidden">
+                    <div id="player-placeholder" class="absolute inset-0 flex items-center justify-center bg-pink-50 text-pink-400 hidden">
                         <div class="text-center">
                             <i class="fas fa-film text-6xl mb-4 opacity-50"></i>
                             <p>Chọn phim để bắt đầu xem</p>
@@ -77,9 +77,9 @@
             </div>
 
             <!-- Episode Selector (Cho phim bộ) -->
-            <div id="episode-section" class="bg-gray-800 rounded-xl p-5 shadow-lg border border-gray-700 hidden">
-                <h3 class="text-lg font-bold text-white mb-3 flex items-center">
-                    <i class="fas fa-layers mr-2 text-blue-500"></i>Danh Sách Tập
+            <div id="episode-section" class="bg-white rounded-xl p-5 shadow-lg border border-pink-100 hidden">
+                <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-layers mr-2 text-pink-500"></i>Danh Sách Tập
                 </h3>
                 <div id="server-list" class="flex flex-col gap-4">
                     <!-- Các server và nút tập phim -->
@@ -87,17 +87,17 @@
             </div>
 
             <!-- Movie Info -->
-            <div id="movie-info" class="flex flex-col md:flex-row gap-6 bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700">
+            <div id="movie-info" class="flex flex-col md:flex-row gap-6 bg-white rounded-xl p-6 shadow-lg border border-pink-100">
                 <!-- Poster -->
                 <div class="hidden md:block w-48 shrink-0">
-                    <img id="movie-poster" src="https://via.placeholder.com/300x450?text=No+Image" alt="Poster" class="w-full h-auto rounded-lg shadow-md object-cover aspect-[2/3] border border-gray-600">
+                    <img id="movie-poster" src="https://via.placeholder.com/300x450?text=No+Image" alt="Poster" class="w-full h-auto rounded-lg shadow-md object-cover aspect-[2/3] border border-pink-200">
                 </div>
 
                 <!-- Text Info -->
                 <div class="flex-grow flex flex-col gap-3">
                     <div>
-                        <h2 id="movie-title" class="text-2xl md:text-3xl font-bold text-white leading-tight">...</h2>
-                        <h3 id="movie-origin-name" class="text-md text-gray-400 italic mt-1">...</h3>
+                        <h2 id="movie-title" class="text-2xl md:text-3xl font-bold text-gray-800 leading-tight">...</h2>
+                        <h3 id="movie-origin-name" class="text-md text-gray-500 italic mt-1">...</h3>
                     </div>
 
                     <div class="flex flex-wrap gap-2 text-xs font-semibold" id="movie-badges">
@@ -108,7 +108,7 @@
                         <!-- Categories -->
                     </div>
 
-                    <div class="mt-2 text-gray-300 leading-relaxed text-sm border-t border-gray-700 pt-3" id="movie-description">
+                    <div class="mt-2 text-gray-600 leading-relaxed text-sm border-t border-pink-100 pt-3" id="movie-description">
                         Chọn một phim để xem chi tiết...
                     </div>
                 </div>
@@ -542,18 +542,18 @@
                     const thumbUrl = `${thumbBase}/uploads/movies/${item.thumb_url}`;
 
                     const el = document.createElement('div');
-                    el.className = `movie-item p-3 flex gap-3 cursor-pointer hover:bg-gray-700 transition border-b border-gray-700 last:border-0`;
+                    el.className = `movie-item p-3 flex gap-3 cursor-pointer hover:bg-pink-50 transition border-b border-pink-100 last:border-0`;
                     el.onclick = () => this.loadMovie(index);
                     el.id = `movie-item-${index}`;
 
                     el.innerHTML = `
-                        <img src="${thumbUrl}" class="w-16 h-24 object-cover rounded shadow-sm bg-gray-600" alt="${item.name}">
+                        <img src="${thumbUrl}" class="w-16 h-24 object-cover rounded shadow-sm bg-gray-200" alt="${item.name}">
                         <div class="flex flex-col justify-center min-w-0">
-                            <h4 class="font-bold text-sm text-gray-200 truncate pr-2 box-border leading-tight mb-1">${item.name}</h4>
-                            <span class="text-xs text-gray-400 italic truncate">${item.origin_name}</span>
+                            <h4 class="font-bold text-sm text-gray-800 truncate pr-2 box-border leading-tight mb-1">${item.name}</h4>
+                            <span class="text-xs text-gray-500 italic truncate">${item.origin_name}</span>
                             <div class="flex gap-1 mt-1">
-                                <span class="bg-gray-600 text-[10px] px-1.5 py-0.5 rounded text-gray-300">${item.year}</span>
-                                <span class="bg-blue-900 text-[10px] px-1.5 py-0.5 rounded text-blue-200">${item.lang.split('+')[0].trim()}</span>
+                                <span class="bg-pink-100 text-[10px] px-1.5 py-0.5 rounded text-pink-700">${item.year}</span>
+                                <span class="bg-blue-100 text-[10px] px-1.5 py-0.5 rounded text-blue-700">${item.lang.split('+')[0].trim()}</span>
                             </div>
                         </div>
                     `;
@@ -581,10 +581,10 @@
 
                 // 3. Badges
                 this.movieBadges.innerHTML = `
-                    <span class="bg-blue-600 text-white px-2 py-1 rounded border border-blue-500 shadow-sm shadow-blue-500/50">${item.quality}</span>
-                    <span class="bg-red-600 text-white px-2 py-1 rounded border border-red-500">${item.lang}</span>
-                    <span class="bg-gray-700 text-gray-300 px-2 py-1 rounded border border-gray-600">${item.year}</span>
-                    <span class="bg-gray-700 text-gray-300 px-2 py-1 rounded border border-gray-600">${item.time}</span>
+                    <span class="bg-blue-500 text-white px-2 py-1 rounded border border-blue-400 shadow-sm">${item.quality}</span>
+                    <span class="bg-red-500 text-white px-2 py-1 rounded border border-red-400">${item.lang}</span>
+                    <span class="bg-pink-100 text-pink-700 px-2 py-1 rounded border border-pink-200">${item.year}</span>
+                    <span class="bg-pink-100 text-pink-700 px-2 py-1 rounded border border-pink-200">${item.time}</span>
                 `;
 
                 // 4. Categories
@@ -592,7 +592,7 @@
                 if(item.category) {
                     item.category.forEach(cat => {
                         const span = document.createElement('span');
-                        span.className = "bg-gray-800 hover:bg-gray-700 text-blue-400 border border-gray-600 px-3 py-1 rounded-full text-xs transition cursor-default";
+                        span.className = "bg-white hover:bg-pink-50 text-pink-500 border border-pink-200 px-3 py-1 rounded-full text-xs transition cursor-default";
                         span.textContent = `# ${cat.name}`;
                         this.movieCategories.appendChild(span);
                     });
@@ -609,7 +609,7 @@
 
                     item.episodes.forEach((server) => {
                         const serverDiv = document.createElement('div');
-                        serverDiv.innerHTML = `<h4 class="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider border-l-2 border-blue-500 pl-2">${server.server_name}</h4>`;
+                        serverDiv.innerHTML = `<h4 class="text-sm font-bold text-gray-500 mb-2 uppercase tracking-wider border-l-2 border-pink-400 pl-2">${server.server_name}</h4>`;
                         const btnsDiv = document.createElement('div');
                         btnsDiv.className = "flex flex-wrap gap-2";
 
@@ -617,14 +617,20 @@
                             if (!firstEpLink) firstEpLink = ep.link_embed;
 
                             const btn = document.createElement('button');
-                            btn.className = "episode-btn px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded shadow-sm transition min-w-[3rem]";
+                            btn.className = "episode-btn px-4 py-2 bg-pink-50 hover:bg-pink-100 text-gray-700 text-sm rounded shadow-sm transition min-w-[3rem] border border-pink-100";
                             btn.textContent = ep.name;
                             btn.onclick = () => {
                                 this.playVideo(ep.link_embed);
                                 // Active button visual
-                                document.querySelectorAll('.episode-btn').forEach(b => b.classList.remove('bg-blue-600', 'ring-2', 'ring-blue-400'));
-                                btn.classList.remove('bg-gray-700', 'hover:bg-gray-600');
-                                btn.classList.add('bg-blue-600', 'ring-2', 'ring-blue-400');
+                                document.querySelectorAll('.episode-btn').forEach(b => b.classList.remove('bg-pink-500', 'text-white', 'ring-2', 'ring-pink-300'));
+                                document.querySelectorAll('.episode-btn').forEach(b => {
+                                     // Reset other buttons to default classes if needed, 
+                                     // but removing active classes is mainly what we need.
+                                     // Actually clearer to reset classList completely and re-add default
+                                     b.className = "episode-btn px-4 py-2 bg-pink-50 hover:bg-pink-100 text-gray-700 text-sm rounded shadow-sm transition min-w-[3rem] border border-pink-100";
+                                });
+                                
+                                btn.className = "episode-btn px-4 py-2 bg-pink-500 text-white text-sm rounded shadow-sm transition min-w-[3rem] ring-2 ring-pink-300 border border-pink-500";
                             };
                             btnsDiv.appendChild(btn);
                         });
@@ -636,13 +642,9 @@
                     // Auto load first episode
                     if(firstEpLink) {
                         this.playVideo(firstEpLink);
-                        // Highlight first button visually manually if needed, 
-                        // but usually user interaction is better. 
-                        // Let's sim click on first button of first server? 
                         const firstBtn = this.serverList.querySelector('button');
                         if(firstBtn) {
-                            firstBtn.classList.remove('bg-gray-700', 'hover:bg-gray-600');
-                            firstBtn.classList.add('bg-blue-600', 'ring-2', 'ring-blue-400');
+                           firstBtn.className = "episode-btn px-4 py-2 bg-pink-500 text-white text-sm rounded shadow-sm transition min-w-[3rem] ring-2 ring-pink-300 border border-pink-500";
                         }
                     }
 
